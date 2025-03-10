@@ -1,27 +1,28 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/integrations/supabase/types";
 
-export const setupRealtimeForTable = (
-  tableName: string, 
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*',
-  callback: () => void
-) => {
-  const channel = supabase
-    .channel('schema-db-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: eventType,
-        schema: 'public',
-        table: tableName
-      },
-      () => {
-        callback();
-      }
-    )
-    .subscribe();
+export const supabase = createClient<Database>(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-};
+// Fixed channel configuration for Supabase Realtime
+export const channel = supabase.channel("custom-all-channel", {
+  config: {
+    broadcast: { self: true },
+  },
+});
+
+// Configure the channel to listen for changes
+channel.on(
+  'postgres_changes',
+  {
+    event: '*',
+    schema: 'public',
+    table: 'contacts',
+  },
+  (payload) => {
+    console.log("Change received!", payload);
+  }
+);
