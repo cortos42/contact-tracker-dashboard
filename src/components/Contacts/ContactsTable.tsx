@@ -30,6 +30,7 @@ interface ContactsTableProps {
   isLoading: boolean;
 }
 
+// Update the types to match the database enums
 type ContactStatus = "nouveau" | "contacté";
 type MeetingResult = "concluant" | "non-concluant" | "en_attente";
 type WorkStatus = "terminé" | "en_cours" | "planifié" | "non_commencé";
@@ -66,12 +67,25 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
           if (data) {
             // Map project data to contact
             contact.projectId = data.id;
-            contact.contactStatus = data.contact_status === 'completed' ? 'contacté' : 'nouveau';
-            contact.meetingResult = data.appointment_status === 'completed' ? 'concluant' : 
-                                   data.appointment_status === 'failed' ? 'non-concluant' : 'en_attente';
-            contact.workStatus = data.work_status;
+            // Fix the value mappings here to match database enums
+            contact.contactStatus = data.contact_status === 'success' ? 'contacté' : 'nouveau';
+            contact.meetingResult = data.appointment_status === 'success' ? 'concluant' : 
+                                   data.appointment_status === 'failure' ? 'non-concluant' : 'en_attente';
+            
+            // Update work status mapping
+            if (data.work_status === 'completed') {
+              contact.workStatus = 'terminé';
+            } else if (data.work_status === 'in_progress') {
+              contact.workStatus = 'en_cours';
+            } else if (data.work_status === 'not_started') {
+              contact.workStatus = 'non_commencé';
+            } else {
+              contact.workStatus = 'planifié';
+            }
+            
+            // Update payment status mapping
             contact.paymentStatus = data.payment_status === 'paid' ? 'payé' : 
-                                   data.payment_status === 'partial' ? 'partiellement_payé' : 'en_attente';
+                                   data.payment_status === 'pending' ? 'en_attente' : 'non_payé';
             contact.comment = data.contact_comment;
           }
         }
@@ -106,27 +120,27 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
         'paymentStatus': 'payment_status'
       };
       
-      // Map UI values to database values
+      // Fix the value mappings to match the database enums
       const valueMappings: Record<string, Record<string, string>> = {
         'contactStatus': {
-          'contacté': 'completed',
+          'contacté': 'success',
           'nouveau': 'pending'
         },
         'meetingResult': {
-          'concluant': 'completed',
-          'non-concluant': 'failed',
+          'concluant': 'success',
+          'non-concluant': 'failure',
           'en_attente': 'pending'
         },
         'workStatus': {
           'terminé': 'completed',
           'en_cours': 'in_progress',
-          'planifié': 'scheduled',
+          'planifié': 'not_started',
           'non_commencé': 'not_started'
         },
         'paymentStatus': {
           'payé': 'paid',
-          'partiellement_payé': 'partial',
-          'non_payé': 'unpaid',
+          'partiellement_payé': 'pending',
+          'non_payé': 'rejected',
           'en_attente': 'pending'
         }
       };
