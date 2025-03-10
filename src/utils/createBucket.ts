@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const createDocumentsBucket = async () => {
   try {
+    console.log('Starting documents bucket check/creation...');
+    
     // Check if bucket exists first
     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
     
@@ -14,7 +16,7 @@ export const createDocumentsBucket = async () => {
     const bucketExists = buckets?.some(bucket => bucket.name === 'documents');
     
     if (!bucketExists) {
-      console.log('Creating documents bucket...');
+      console.log('Documents bucket not found. Creating new bucket...');
       const { data, error } = await supabase.storage.createBucket('documents', {
         public: true,
         fileSizeLimit: 5242880, // 5MB
@@ -27,11 +29,11 @@ export const createDocumentsBucket = async () => {
       }
       
       console.log('Documents bucket created successfully:', data);
+      return true;
     } else {
-      console.log('Documents bucket already exists');
+      console.log('Documents bucket already exists. No action needed.');
+      return true;
     }
-    
-    return true;
   } catch (error) {
     console.error('Error in createDocumentsBucket:', error);
     return false;

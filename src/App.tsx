@@ -13,20 +13,38 @@ import Documents from "./pages/Documents";
 import Callbacks from "./pages/Callbacks";
 import { ContactProvider } from "./context/ContactContext";
 import { createDocumentsBucket } from "./utils/createBucket";
+import { toast } from "./components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [bucketError, setBucketError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     // Create documents bucket on app initialization
-    createDocumentsBucket()
-      .catch((error) => {
-        console.error("Error creating documents bucket:", error);
-        setBucketError("Erreur lors de la création du bucket de documents. Les fonctionnalités de stockage pourraient être limitées.");
-        // Continue with the app despite bucket creation errors
-      });
+    const initializeApp = async () => {
+      try {
+        setIsInitializing(true);
+        const success = await createDocumentsBucket();
+        
+        if (!success) {
+          setBucketError("Erreur lors de la création du bucket de documents. Les fonctionnalités de stockage pourraient être limitées.");
+          toast({
+            title: "Erreur d'initialisation",
+            description: "Erreur lors de la création du bucket de documents.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error during app initialization:", error);
+        setBucketError("Une erreur est survenue lors de l'initialisation de l'application.");
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeApp();
   }, []);
 
   return (

@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Settings, Clipboard, LogOut, PhoneCall } from 'lucide-react';
+import { Home, Users, FileText, Clipboard, LogOut, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Logo from './Logo';
 
