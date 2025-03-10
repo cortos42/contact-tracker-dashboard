@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -21,6 +21,9 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CallbackRequest {
   id: string;
@@ -34,23 +37,22 @@ const CallbackRequestsTable: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch callback requests
-  const { data: callbackRequests = [], isLoading } = useQuery({
+  // Fetch callback requests with improved error handling
+  const { data: callbackRequests = [], isLoading, error } = useQuery({
     queryKey: ['callback-requests'],
     queryFn: async () => {
+      console.log('Fetching callback requests...');
       const { data, error } = await supabase
         .from('callback_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de charger les demandes de rappel',
-          variant: 'destructive',
-        });
-        return [];
+        console.error('Error fetching callback requests:', error);
+        throw new Error(error.message);
       }
+      
+      console.log('Fetched callback requests:', data);
       return data as CallbackRequest[];
     },
   });
@@ -58,12 +60,14 @@ const CallbackRequestsTable: React.FC = () => {
   // Update callback request status
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      console.log(`Updating status for request ${id} to ${status}`);
       const { error } = await supabase
         .from('callback_requests')
         .update({ status })
         .eq('id', id);
 
       if (error) {
+        console.error('Error updating status:', error);
         throw new Error(error.message);
       }
     },
@@ -74,7 +78,8 @@ const CallbackRequestsTable: React.FC = () => {
         description: 'Statut mis à jour avec succès',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Mutation error:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible de mettre à jour le statut',
@@ -86,6 +91,18 @@ const CallbackRequestsTable: React.FC = () => {
   const handleStatusChange = (id: string, status: string) => {
     updateStatusMutation.mutate({ id, status });
   };
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Erreur</AlertTitle>
+        <AlertDescription>
+          Impossible de charger les demandes de rappel. Veuillez réessayer plus tard.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -101,14 +118,17 @@ const CallbackRequestsTable: React.FC = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
-                  Chargement...
-                </TableCell>
-              </TableRow>
+              Array(3).fill(0).map((_, index) => (
+                <TableRow key={`loading-${index}`}>
+                  <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-[110px]" /></TableCell>
+                </TableRow>
+              ))
             ) : callbackRequests.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
+                <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
                   Aucune demande de rappel trouvée
                 </TableCell>
               </TableRow>
