@@ -90,7 +90,7 @@ const PropositionsList: React.FC = () => {
         description: "Le PDF est en cours de génération...",
       });
 
-      // Create mock proposition data
+      // Create mock proposition data with ALL required properties
       const propositionData = {
         client: {
           nom: contact.name,
@@ -103,6 +103,14 @@ const PropositionsList: React.FC = () => {
             materiau: "Laine de roche",
             surface: "80m²"
           },
+          sousRampants: {
+            materiau: "Laine minérale",
+            surface: "40m²"
+          },
+          planchersBas: {
+            materiau: "Isolant thermique",
+            surface: "60m²"
+          },
           murs: {
             methode: "interieur" as const,
             materiau: "Isolation thermique",
@@ -111,6 +119,26 @@ const PropositionsList: React.FC = () => {
           chauffage: {
             actuel: "Chauffage électrique",
             remplacement: "Pompe à chaleur"
+          },
+          chauffeEau: {
+            actuel: "Chauffe-eau électrique",
+            propose: "Chauffe-eau thermodynamique"
+          },
+          ventilation: {
+            actuel: "Ventilation naturelle",
+            propose: "VMC double flux",
+            nombreBouche: "5"
+          },
+          menuiseries: {
+            materiau: "Aluminium",
+            couleur: "Gris anthracite"
+          },
+          panneauxSolaires: {
+            marqueModeleOnduleur: "SolarEdge SE5000",
+            nombreOnduleur: "1",
+            puissance: "3kWc",
+            marqueModele: "SunPower Maxeon 3",
+            nombrePanneaux: "10"
           }
         },
         financier: {
