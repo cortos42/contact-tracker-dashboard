@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useContacts } from '@/context/ContactContext';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { MeetingResult, WorkStatus, PaymentStatus } from '@/types/contact';
+import { ContactProvider } from '@/context/ContactContext';
 
 const ContactDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

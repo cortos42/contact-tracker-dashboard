@@ -1,4 +1,3 @@
-
 import { Contact, Document, SignatureDocument } from "../types/contact";
 
 // Génération de données pour test 
@@ -152,6 +151,7 @@ export const mockSignatureDocuments: SignatureDocument[] = [
           materiau: "Laine de verre",
           surface: "60m²"
         },
+        planchersBas: {},
         murs: {
           methode: "interieur",
           materiau: "Isolation thermique par l'intérieur",
@@ -160,7 +160,11 @@ export const mockSignatureDocuments: SignatureDocument[] = [
         chauffage: {
           actuel: "Chaudière fioul",
           remplacement: "Pompe à chaleur"
-        }
+        },
+        chauffeEau: {},
+        ventilation: {},
+        menuiseries: {},
+        panneauxSolaires: {}
       },
       financier: {
         coutTotal: "18500",
@@ -183,6 +187,8 @@ export const mockSignatureDocuments: SignatureDocument[] = [
         telephone: "07 45 67 89 01"
       },
       travaux: {
+        combles: {},
+        sousRampants: {},
         planchersBas: {
           materiau: "Polyuréthane",
           surface: "70m²"
@@ -196,6 +202,9 @@ export const mockSignatureDocuments: SignatureDocument[] = [
           actuel: "Radiateurs électriques",
           remplacement: "Pompe à chaleur air-eau"
         },
+        chauffeEau: {},
+        ventilation: {},
+        menuiseries: {},
         panneauxSolaires: {
           marqueModeleOnduleur: "SolarEdge SE5000",
           nombreOnduleur: "1",
