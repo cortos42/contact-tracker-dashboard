@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
-import EligibilityTable from '@/components/Contacts/EligibilityTable';
+import { Search, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { EligibilitySubmission } from '@/types/contact';
+import ContactsTable from '@/components/Contacts/ContactsTable';
 
 const Contacts: React.FC = () => {
   const [submissions, setSubmissions] = useState<EligibilitySubmission[]>([]);
@@ -97,10 +97,24 @@ const Contacts: React.FC = () => {
         </div>
       </div>
       
-      <EligibilityTable 
+      <ContactsTable 
         submissions={filteredSubmissions} 
         isLoading={isLoading} 
       />
+      
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+        <h3 className="font-semibold mb-2">Légende des icônes:</h3>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <li className="flex items-center gap-2">✅ <span>Contacté</span></li>
+          <li className="flex items-center gap-2">❌ <span>Non contacté</span></li>
+          <li className="flex items-center gap-2">✔️ <span>Rendez-vous concluant</span></li>
+          <li className="flex items-center gap-2">❌ <span>Rendez-vous non concluant</span></li>
+          <li className="flex items-center gap-2">⏳ <span>Rendez-vous en attente</span></li>
+          <li className="flex items-center gap-2">🟢 <span>Payé</span></li>
+          <li className="flex items-center gap-2">🟡 <span>Paiement en attente</span></li>
+          <li className="flex items-center gap-2">🔴 <span>Paiement refusé</span></li>
+        </ul>
+      </div>
     </Layout>
   );
 };

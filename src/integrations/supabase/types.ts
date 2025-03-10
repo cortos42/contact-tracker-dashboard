@@ -33,6 +33,44 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          id: string
+          project_id: string | null
+          signed_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          id?: string
+          project_id?: string | null
+          signed_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          project_id?: string | null
+          signed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eligibility_submissions: {
         Row: {
           construction_year: string
@@ -78,6 +116,187 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          appointment_status:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          contact_comment: string | null
+          contact_status:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          created_at: string | null
+          eligibility_submission_id: string | null
+          id: string
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          updated_at: string | null
+          work_status: Database["public"]["Enums"]["work_status"] | null
+        }
+        Insert: {
+          appointment_status?:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          contact_comment?: string | null
+          contact_status?:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          created_at?: string | null
+          eligibility_submission_id?: string | null
+          id?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          updated_at?: string | null
+          work_status?: Database["public"]["Enums"]["work_status"] | null
+        }
+        Update: {
+          appointment_status?:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          contact_comment?: string | null
+          contact_status?:
+            | Database["public"]["Enums"]["project_phase_status"]
+            | null
+          created_at?: string | null
+          eligibility_submission_id?: string | null
+          id?: string
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          updated_at?: string | null
+          work_status?: Database["public"]["Enums"]["work_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_eligibility_submission_id_fkey"
+            columns: ["eligibility_submission_id"]
+            isOneToOne: false
+            referencedRelation: "eligibility_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          attic_material: string | null
+          attic_surface: string | null
+          client_address: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          client_remainder: number | null
+          crawl_space_material: string | null
+          crawl_space_surface: string | null
+          created_at: string | null
+          current_heating: string | null
+          current_ventilation: string | null
+          current_water_heater: string | null
+          floor_material: string | null
+          floor_surface: string | null
+          id: string
+          project_id: string | null
+          proposed_heating: string | null
+          proposed_ventilation: string | null
+          proposed_water_heater: string | null
+          signed_at: string | null
+          signed_document_url: string | null
+          solar_inverter_brand: string | null
+          solar_inverter_count: number | null
+          solar_panel_brand: string | null
+          solar_panel_count: number | null
+          solar_power_kw: number | null
+          subsidies_amount: number | null
+          total_cost: number | null
+          updated_at: string | null
+          vent_outlets: number | null
+          wall_material: string | null
+          wall_method: string | null
+          wall_surface: string | null
+          window_color: string | null
+          window_material: string | null
+        }
+        Insert: {
+          attic_material?: string | null
+          attic_surface?: string | null
+          client_address: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          client_remainder?: number | null
+          crawl_space_material?: string | null
+          crawl_space_surface?: string | null
+          created_at?: string | null
+          current_heating?: string | null
+          current_ventilation?: string | null
+          current_water_heater?: string | null
+          floor_material?: string | null
+          floor_surface?: string | null
+          id?: string
+          project_id?: string | null
+          proposed_heating?: string | null
+          proposed_ventilation?: string | null
+          proposed_water_heater?: string | null
+          signed_at?: string | null
+          signed_document_url?: string | null
+          solar_inverter_brand?: string | null
+          solar_inverter_count?: number | null
+          solar_panel_brand?: string | null
+          solar_panel_count?: number | null
+          solar_power_kw?: number | null
+          subsidies_amount?: number | null
+          total_cost?: number | null
+          updated_at?: string | null
+          vent_outlets?: number | null
+          wall_material?: string | null
+          wall_method?: string | null
+          wall_surface?: string | null
+          window_color?: string | null
+          window_material?: string | null
+        }
+        Update: {
+          attic_material?: string | null
+          attic_surface?: string | null
+          client_address?: string
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          client_remainder?: number | null
+          crawl_space_material?: string | null
+          crawl_space_surface?: string | null
+          created_at?: string | null
+          current_heating?: string | null
+          current_ventilation?: string | null
+          current_water_heater?: string | null
+          floor_material?: string | null
+          floor_surface?: string | null
+          id?: string
+          project_id?: string | null
+          proposed_heating?: string | null
+          proposed_ventilation?: string | null
+          proposed_water_heater?: string | null
+          signed_at?: string | null
+          signed_document_url?: string | null
+          solar_inverter_brand?: string | null
+          solar_inverter_count?: number | null
+          solar_panel_brand?: string | null
+          solar_panel_count?: number | null
+          solar_power_kw?: number | null
+          subsidies_amount?: number | null
+          total_cost?: number | null
+          updated_at?: string | null
+          vent_outlets?: number | null
+          wall_material?: string | null
+          wall_method?: string | null
+          wall_surface?: string | null
+          window_color?: string | null
+          window_material?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -86,7 +305,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      payment_status: "paid" | "pending" | "rejected"
+      project_phase_status: "success" | "failure" | "pending"
+      work_status: "not_started" | "in_progress" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
