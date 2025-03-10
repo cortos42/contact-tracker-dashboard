@@ -1,14 +1,25 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React from 'react';
+import Layout from '@/components/Layout';
+import DashboardHeader from '@/components/Dashboard/DashboardHeader';
+import StatCards from '@/components/Dashboard/StatCards';
+import ContactProgress from '@/components/Dashboard/ContactProgress';
+import RecentContacts from '@/components/Dashboard/RecentContacts';
+import { ContactProvider } from '@/context/ContactContext';
+
+const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <ContactProvider>
+      <Layout>
+        <DashboardHeader title="Tableau de bord" showSearch={false} />
+        <StatCards />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <ContactProgress />
+          <RecentContacts />
+        </div>
+      </Layout>
+    </ContactProvider>
   );
 };
 
-export default Index;
+export default Dashboard;
