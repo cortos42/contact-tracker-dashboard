@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
-import DashboardHeader from '@/components/Dashboard/DashboardHeader';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 import EligibilityTable from '@/components/Contacts/EligibilityTable';
 import { supabase } from '@/integrations/supabase/client';
 import { EligibilitySubmission } from '@/types/contact';
@@ -79,26 +80,21 @@ const Contacts: React.FC = () => {
     }
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
   return (
     <Layout>
-      <DashboardHeader 
-        title="Contacts" 
-        showAddButton={false}
-        showSearch={true}
-      />
-      
-      <div className="mb-6">
-        <input
-          type="search"
-          placeholder="Rechercher par nom, email, téléphone ou code postal..."
-          className="w-full px-4 py-2 border rounded-md"
-          onChange={(e) => handleSearch(e.target.value)}
-          value={searchTerm}
-        />
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <h1 className="text-2xl font-bold">Contacts</h1>
+
+        <div className="relative flex-1 md:w-64">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            type="search"
+            placeholder="Rechercher par nom, email, téléphone ou code postal..."
+            className="pl-9 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
       
       <EligibilityTable 
