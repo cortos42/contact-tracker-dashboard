@@ -1,4 +1,3 @@
-
 export type ContactStatus = "nouveau" | "contacté" | "rendez-vous" | "travaux" | "payé";
 
 export type ContactMethod = "email" | "téléphone" | "aucun";
@@ -102,4 +101,19 @@ export interface PropositionData {
     montantSubventions?: string;
     restantCharge?: string;
   };
+}
+
+export interface EligibilitySubmission {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  postal_code: string;
+  occupancy_status: string | null;
+  property_type: string;
+  construction_year: string;
+  occupants: string;
+  income_range: string | null;
+  planned_works: string[] | null;
+  submitted_at: string;
 }
