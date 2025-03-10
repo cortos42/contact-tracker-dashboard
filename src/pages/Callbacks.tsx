@@ -31,24 +31,37 @@ const Callbacks = () => {
 
   const fetchCallbackRequests = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('callback_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
+    console.log("Fetching callback requests...");
+    
+    try {
+      const { data, error } = await supabase
+        .from('callback_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching callback requests:', error);
+      if (error) {
+        console.error('Error fetching callback requests:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de charger les demandes de rappel: ' + error.message,
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Callback requests received:", data);
+      setRequests(data || []);
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de charger les demandes de rappel',
+        description: 'Une erreur inattendue est survenue',
         variant: 'destructive',
       });
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setRequests(data || []);
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -65,83 +78,115 @@ const Callbacks = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from('callback_requests')
-      .insert([
-        {
-          name: newRequest.name,
-          phone: newRequest.phone,
-          status: 'pending',
-        },
-      ]);
+    try {
+      const { error } = await supabase
+        .from('callback_requests')
+        .insert([
+          {
+            name: newRequest.name,
+            phone: newRequest.phone,
+            status: 'pending',
+          },
+        ]);
 
-    if (error) {
-      console.error('Error adding callback request:', error);
+      if (error) {
+        console.error('Error adding callback request:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Impossible d\'ajouter la demande de rappel: ' + error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Succès',
+        description: 'Demande de rappel ajoutée avec succès',
+      });
+      setNewRequest({ name: '', phone: '' });
+      setOpenAddDialog(false);
+      fetchCallbackRequests();
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'ajouter la demande de rappel',
+        description: 'Une erreur inattendue est survenue',
         variant: 'destructive',
       });
-      return;
     }
-
-    toast({
-      title: 'Succès',
-      description: 'Demande de rappel ajoutée avec succès',
-    });
-    setNewRequest({ name: '', phone: '' });
-    setOpenAddDialog(false);
-    fetchCallbackRequests();
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('callback_requests')
-      .update({ status: newStatus })
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('callback_requests')
+        .update({ status: newStatus })
+        .eq('id', id);
 
-    if (error) {
-      console.error('Error updating callback request status:', error);
+      if (error) {
+        console.error('Error updating callback request status:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de mettre à jour le statut: ' + error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Succès',
+        description: 'Statut mis à jour avec succès',
+      });
+      fetchCallbackRequests();
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le statut',
+        description: 'Une erreur inattendue est survenue',
         variant: 'destructive',
       });
-      return;
     }
-
-    toast({
-      title: 'Succès',
-      description: 'Statut mis à jour avec succès',
-    });
-    fetchCallbackRequests();
   };
 
   const deleteRequest = async (id: string) => {
-    const { error } = await supabase
-      .from('callback_requests')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('callback_requests')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
-      console.error('Error deleting callback request:', error);
+      if (error) {
+        console.error('Error deleting callback request:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de supprimer la demande de rappel: ' + error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Succès',
+        description: 'Demande de rappel supprimée avec succès',
+      });
+      fetchCallbackRequests();
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer la demande de rappel',
+        description: 'Une erreur inattendue est survenue',
         variant: 'destructive',
       });
-      return;
     }
-
-    toast({
-      title: 'Succès',
-      description: 'Demande de rappel supprimée avec succès',
-    });
-    fetchCallbackRequests();
   };
 
   const formatDate = (dateStr: string) => {
-    return format(new Date(dateStr), "d MMMM yyyy 'à' HH:mm", { locale: fr });
+    try {
+      return format(new Date(dateStr), "d MMMM yyyy 'à' HH:mm", { locale: fr });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateStr;
+    }
   };
   
   const getStatusIcon = (status: string) => {
