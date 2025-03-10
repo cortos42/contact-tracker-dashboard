@@ -15,7 +15,6 @@ const navItems = [
   { name: 'Propositions', href: '/propositions', icon: FileText },
   { name: 'Documents', href: '/documents', icon: Clipboard },
   { name: 'Demande de rappel', href: '/callbacks', icon: PhoneCall },
-  { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
