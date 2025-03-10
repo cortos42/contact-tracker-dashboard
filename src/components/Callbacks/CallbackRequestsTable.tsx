@@ -92,6 +92,9 @@ const CallbackRequestsTable: React.FC = () => {
     updateStatusMutation.mutate({ id, status });
   };
 
+  // Log state for debugging
+  console.log('Current state:', { isLoading, error, callbackRequests });
+
   if (error) {
     return (
       <Alert variant="destructive" className="mb-4">
@@ -99,6 +102,7 @@ const CallbackRequestsTable: React.FC = () => {
         <AlertTitle>Erreur</AlertTitle>
         <AlertDescription>
           Impossible de charger les demandes de rappel. Veuillez réessayer plus tard.
+          {error instanceof Error ? ` (${error.message})` : ''}
         </AlertDescription>
       </Alert>
     );

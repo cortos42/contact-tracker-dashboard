@@ -14,7 +14,8 @@ const CallbackRequests: React.FC = () => {
 
   // For testing purposes, this function can be used to add test data
   const addTestCallbackRequest = async () => {
-    const { error } = await supabase
+    console.log('Adding test callback request...');
+    const { data, error } = await supabase
       .from('callback_requests')
       .insert([
         {
@@ -22,16 +23,18 @@ const CallbackRequests: React.FC = () => {
           phone: '0612345678',
           status: 'pending'
         }
-      ]);
+      ])
+      .select();
 
     if (error) {
       console.error('Error adding test data:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'ajouter les données de test',
+        description: `Impossible d'ajouter les données de test: ${error.message}`,
         variant: 'destructive',
       });
     } else {
+      console.log('Test data added successfully:', data);
       toast({
         title: 'Succès',
         description: 'Données de test ajoutées',
