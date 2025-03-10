@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -83,15 +84,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
             }
             
             // Update payment status mapping
-            if (data.payment_status === 'paid') {
-              contact.paymentStatus = 'payé';
-            } else if (data.payment_status === 'pending') {
-              contact.paymentStatus = 'en_attente';
-            } else if (data.payment_status === 'rejected') {
-              contact.paymentStatus = 'non_payé';
-            } else {
-              contact.paymentStatus = 'partiellement_payé';
-            }
+            contact.paymentStatus = data.payment_status === 'paid' ? 'payé' : 
+                                   data.payment_status === 'pending' ? 'en_attente' : 'non_payé';
             contact.comment = data.contact_comment;
           }
         }
@@ -322,7 +316,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
                         {getStatusIcon(contact.contactStatus)}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-white min-w-[150px] z-50">
+                    <SelectContent>
                       <SelectItem value="contacté">Contacté</SelectItem>
                       <SelectItem value="nouveau">Non contacté</SelectItem>
                     </SelectContent>
@@ -338,7 +332,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
                         {getMeetingResultIcon(contact.meetingResult)}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-white min-w-[150px] z-50">
+                    <SelectContent>
                       <SelectItem value="concluant">Concluant</SelectItem>
                       <SelectItem value="non-concluant">Non concluant</SelectItem>
                       <SelectItem value="en_attente">En attente</SelectItem>
@@ -355,7 +349,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
                         {getWorkStatusIcon(contact.workStatus)}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-white min-w-[150px] z-50">
+                    <SelectContent>
                       <SelectItem value="terminé">Terminé</SelectItem>
                       <SelectItem value="en_cours">En cours</SelectItem>
                       <SelectItem value="planifié">Planifié</SelectItem>
@@ -373,7 +367,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
                         {getPaymentStatusIcon(contact.paymentStatus)}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-white min-w-[150px] z-50">
+                    <SelectContent>
                       <SelectItem value="payé">Payé</SelectItem>
                       <SelectItem value="partiellement_payé">Partiellement payé</SelectItem>
                       <SelectItem value="non_payé">Non payé</SelectItem>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
 import { Input } from '@/components/ui/input';
-import { Search, Info, Check, X, Clock, CircleDollarSign } from 'lucide-react';
+import { Search, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { EligibilitySubmission } from '@/types/contact';
 import ContactsTable from '@/components/Contacts/ContactsTable';
@@ -105,54 +105,14 @@ const Contacts: React.FC = () => {
       <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
         <h3 className="font-semibold mb-2">Légende des icônes:</h3>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <li className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
-            <span>Contacté</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <X className="h-4 w-4 text-red-500" />
-            <span>Non contacté</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
-            <span>Rendez-vous concluant</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <X className="h-4 w-4 text-red-500" />
-            <span>Rendez-vous non concluant</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-amber-500" />
-            <span>Rendez-vous en attente</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <CircleDollarSign className="h-4 w-4 text-green-500" />
-            <span>Payé</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <CircleDollarSign className="h-4 w-4 text-amber-500" />
-            <span>Paiement en attente/partiel</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <CircleDollarSign className="h-4 w-4 text-red-500" />
-            <span>Paiement refusé</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-500" />
-            <span>Travaux terminés</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-500" />
-            <span>Travaux en cours</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-amber-500" />
-            <span>Travaux planifiés</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <X className="h-4 w-4 text-red-500" />
-            <span>Travaux non commencés</span>
-          </li>
+          <li className="flex items-center gap-2">✅ <span>Contacté</span></li>
+          <li className="flex items-center gap-2">❌ <span>Non contacté</span></li>
+          <li className="flex items-center gap-2">✔️ <span>Rendez-vous concluant</span></li>
+          <li className="flex items-center gap-2">❌ <span>Rendez-vous non concluant</span></li>
+          <li className="flex items-center gap-2">⏳ <span>Rendez-vous en attente</span></li>
+          <li className="flex items-center gap-2">🟢 <span>Payé</span></li>
+          <li className="flex items-center gap-2">🟡 <span>Paiement en attente</span></li>
+          <li className="flex items-center gap-2">🔴 <span>Paiement refusé</span></li>
         </ul>
       </div>
     </Layout>
