@@ -84,8 +84,16 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
             }
             
             // Update payment status mapping
-            contact.paymentStatus = data.payment_status === 'paid' ? 'payé' : 
-                                   data.payment_status === 'pending' ? 'en_attente' : 'non_payé';
+            if (data.payment_status === 'paid') {
+              contact.paymentStatus = 'payé';
+            } else if (data.payment_status === 'pending') {
+              contact.paymentStatus = 'en_attente';
+            } else if (data.payment_status === 'rejected') {
+              contact.paymentStatus = 'non_payé';
+            } else {
+              contact.paymentStatus = 'partiellement_payé'; 
+            }
+            
             contact.comment = data.contact_comment;
           }
         }
@@ -148,6 +156,8 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
       const dbField = fieldMappings[field];
       const dbValue = valueMappings[field][value as any];
       
+      console.log(`Updating ${dbField} to ${dbValue} for contact ${contact.id}`);
+      
       if (!contact.projectId) {
         // Create a new project if it doesn't exist
         const { data, error } = await supabase
@@ -159,11 +169,15 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
           .select()
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating project:', error);
+          throw error;
+        }
         
         // Update the contact with the new project ID
         if (data) {
           contact.projectId = data.id;
+          console.log('Created new project:', data.id);
         }
       } else {
         // Update existing project
@@ -172,7 +186,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
           .update({ [dbField]: dbValue })
           .eq('id', contact.projectId);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating project:', error);
+          throw error;
+        }
+        
+        console.log(`Updated project ${contact.projectId}`);
       }
       
       // Update local state
@@ -240,6 +259,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
     }
   };
   
+  // Utiliser ces fonctions pour garantir la cohérence avec la légende
   const getStatusIcon = (status: ContactStatus | undefined) => {
     if (status === "contacté") return <Check className="h-4 w-4 text-green-500" />;
     return <X className="h-4 w-4 text-red-500" />;
@@ -261,7 +281,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
   };
   
   const getPaymentStatusIcon = (status: PaymentStatus | undefined) => {
-    if (!status) return <X className="h-4 w-4 text-red-500" />;
+    if (!status) return <CircleDollarSign className="h-4 w-4 text-red-500" />;
     if (status === "payé") return <CircleDollarSign className="h-4 w-4 text-green-500" />;
     if (status === "partiellement_payé") return <CircleDollarSign className="h-4 w-4 text-amber-500" />;
     if (status === "non_payé") return <CircleDollarSign className="h-4 w-4 text-red-500" />;
