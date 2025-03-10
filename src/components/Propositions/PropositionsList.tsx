@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from "react";
-import { useContacts } from "@/context/ContactContext";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,7 +13,6 @@ import { Tables } from "@/integrations/supabase/types";
 type EligibilitySubmission = Tables<'eligibility_submissions'>;
 
 const PropositionsList: React.FC = () => {
-  const { signatureDocuments } = useContacts();
   const { toast } = useToast();
   const [databaseContacts, setDatabaseContacts] = useState<EligibilitySubmission[]>([]);
   const [loading, setLoading] = useState(true);
