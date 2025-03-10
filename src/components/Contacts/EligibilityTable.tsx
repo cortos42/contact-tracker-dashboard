@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -35,14 +35,17 @@ const EligibilityTable: React.FC<EligibilityTableProps> = ({ submissions, isLoad
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>ID</TableHead>
             <TableHead>Nom</TableHead>
             <TableHead>Contact</TableHead>
+            <TableHead>Propriété</TableHead>
+            <TableHead>Occupation</TableHead>
             <TableHead>Code Postal</TableHead>
-            <TableHead>Logement</TableHead>
+            <TableHead>Revenus</TableHead>
             <TableHead>Travaux envisagés</TableHead>
             <TableHead>Date</TableHead>
           </TableRow>
@@ -50,30 +53,47 @@ const EligibilityTable: React.FC<EligibilityTableProps> = ({ submissions, isLoad
         <TableBody>
           {submissions.map((submission) => (
             <TableRow key={submission.id}>
+              <TableCell className="font-mono text-xs">{submission.id}</TableCell>
               <TableCell className="font-medium">{submission.name}</TableCell>
               <TableCell>
                 <div className="flex flex-col">
-                  <span>{submission.email}</span>
-                  <span className="text-gray-500">{submission.phone}</span>
+                  <span className="text-sm">{submission.email}</span>
+                  <span className="text-sm text-gray-500">{submission.phone}</span>
                 </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="text-sm">{submission.property_type}</span>
+                  <span className="text-sm text-gray-500">Construction: {submission.construction_year}</span>
+                  <span className="text-sm text-gray-500">{submission.occupants} occupant(s)</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                {submission.occupancy_status ? (
+                  <span className="text-sm">{submission.occupancy_status}</span>
+                ) : (
+                  <span className="text-sm text-gray-400">Non spécifié</span>
+                )}
               </TableCell>
               <TableCell>{submission.postal_code}</TableCell>
               <TableCell>
-                <div className="flex flex-col">
-                  <span>{submission.property_type}</span>
-                  <span className="text-gray-500">{submission.construction_year}</span>
-                  <span className="text-gray-500">{submission.occupants} occupant(s)</span>
-                  {submission.occupancy_status && (
-                    <span className="text-gray-500">{submission.occupancy_status}</span>
-                  )}
-                </div>
+                {submission.income_range ? (
+                  <span className="text-sm">{submission.income_range}</span>
+                ) : (
+                  <span className="text-sm text-gray-400">Non spécifié</span>
+                )}
               </TableCell>
               <TableCell>{getWorksBadge(submission.planned_works)}</TableCell>
               <TableCell>
-                {formatDistanceToNow(new Date(submission.submitted_at), { 
-                  addSuffix: true, 
-                  locale: fr 
-                })}
+                <div className="flex flex-col">
+                  <span className="text-sm">{format(new Date(submission.submitted_at), 'dd/MM/yyyy')}</span>
+                  <span className="text-xs text-gray-500">
+                    {formatDistanceToNow(new Date(submission.submitted_at), { 
+                      addSuffix: true, 
+                      locale: fr 
+                    })}
+                  </span>
+                </div>
               </TableCell>
             </TableRow>
           ))}
