@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
   const [contacts, setContacts] = useState<ContactWithStatus[]>([]);
   
   // Initialize contacts with submissions data
-  React.useEffect(() => {
+  useEffect(() => {
     if (submissions.length > 0) {
       // Fetch project data for each submission
       const fetchProjectData = async () => {
@@ -64,13 +64,27 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
             .eq('eligibility_submission_id', contact.id)
             .single();
           
+          if (error) {
+            console.error('Error fetching project for contact', contact.id, error);
+          }
+          
           if (data) {
             // Map project data to contact
             contact.projectId = data.id;
+            
+            // Log the actual data from the database
+            console.log('Project data from DB:', data);
+            
             // Fix the value mappings here to match database enums
             contact.contactStatus = data.contact_status === 'success' ? 'contacté' : 'nouveau';
-            contact.meetingResult = data.appointment_status === 'success' ? 'concluant' : 
-                                   data.appointment_status === 'failure' ? 'non-concluant' : 'en_attente';
+            
+            if (data.appointment_status === 'success') {
+              contact.meetingResult = 'concluant';
+            } else if (data.appointment_status === 'failure') {
+              contact.meetingResult = 'non-concluant';
+            } else {
+              contact.meetingResult = 'en_attente';
+            }
             
             // Update work status mapping
             if (data.work_status === 'completed') {
@@ -95,9 +109,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
             }
             
             contact.comment = data.contact_comment;
+          } else {
+            console.log('No project data found for contact', contact.id);
           }
         }
         
+        console.log('Contacts with status:', contactsWithStatus);
         setContacts(contactsWithStatus);
       };
       
@@ -147,7 +164,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
         },
         'paymentStatus': {
           'payé': 'paid',
-          'partiellement_payé': 'pending',
+          'partiellement_payé': 'partial',
           'non_payé': 'rejected',
           'en_attente': 'pending'
         }
@@ -160,6 +177,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
       
       if (!contact.projectId) {
         // Create a new project if it doesn't exist
+        console.log('Creating new project for contact', contact.id);
         const { data, error } = await supabase
           .from('projects')
           .insert({
@@ -181,6 +199,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
         }
       } else {
         // Update existing project
+        console.log('Updating existing project', contact.projectId);
         const { error } = await supabase
           .from('projects')
           .update({ [dbField]: dbValue })
@@ -191,7 +210,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
           throw error;
         }
         
-        console.log(`Updated project ${contact.projectId}`);
+        console.log(`Updated project ${contact.projectId} successfully`);
       }
       
       // Update local state
@@ -216,6 +235,7 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
     try {
       if (!contact.projectId) {
         // Create a new project if it doesn't exist
+        console.log('Creating new project with comment for contact', contact.id);
         const { data, error } = await supabase
           .from('projects')
           .insert({
@@ -225,20 +245,30 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
           .select()
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating project with comment:', error);
+          throw error;
+        }
         
         // Update the contact with the new project ID
         if (data) {
           contact.projectId = data.id;
+          console.log('Created new project with comment:', data.id);
         }
       } else {
         // Update existing project
+        console.log('Updating comment for project', contact.projectId);
         const { error } = await supabase
           .from('projects')
           .update({ contact_comment: comment })
           .eq('id', contact.projectId);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating comment:', error);
+          throw error;
+        }
+        
+        console.log(`Updated comment for project ${contact.projectId} successfully`);
       }
       
       // Update local state
@@ -266,14 +296,12 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
   };
 
   const getMeetingResultIcon = (result: MeetingResult | undefined) => {
-    if (!result) return null;
     if (result === "concluant") return <Check className="h-4 w-4 text-green-500" />;
     if (result === "non-concluant") return <X className="h-4 w-4 text-red-500" />;
     return <Clock className="h-4 w-4 text-amber-500" />;
   };
   
   const getWorkStatusIcon = (status: WorkStatus | undefined) => {
-    if (!status) return <X className="h-4 w-4 text-red-500" />;
     if (status === "terminé") return <Check className="h-4 w-4 text-green-500" />;
     if (status === "en_cours") return <Clock className="h-4 w-4 text-blue-500" />;
     if (status === "planifié") return <Clock className="h-4 w-4 text-amber-500" />;
@@ -281,7 +309,6 @@ const ContactsTable: React.FC<ContactsTableProps> = ({ submissions, isLoading })
   };
   
   const getPaymentStatusIcon = (status: PaymentStatus | undefined) => {
-    if (!status) return <CircleDollarSign className="h-4 w-4 text-red-500" />;
     if (status === "payé") return <CircleDollarSign className="h-4 w-4 text-green-500" />;
     if (status === "partiellement_payé") return <CircleDollarSign className="h-4 w-4 text-amber-500" />;
     if (status === "non_payé") return <CircleDollarSign className="h-4 w-4 text-red-500" />;
