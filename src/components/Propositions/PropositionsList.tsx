@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useContacts } from "@/context/ContactContext";
 import { format } from "date-fns";
@@ -7,9 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const PropositionsList: React.FC = () => {
   const { signatureDocuments, contacts } = useContacts();
+  const { toast } = useToast();
 
   if (signatureDocuments.length === 0) {
     return (
@@ -25,9 +26,27 @@ const PropositionsList: React.FC = () => {
   };
 
   const handleDownload = (pdfUrl?: string) => {
-    if (pdfUrl) {
-      window.open(pdfUrl, "_blank");
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur",
+        description: "Le PDF n'est pas disponible pour cette proposition.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Créer un lien temporaire pour le téléchargement
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = `Proposition_${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Téléchargement démarré",
+      description: "Le PDF a été généré avec succès.",
+    });
   };
 
   return (
@@ -85,7 +104,8 @@ const PropositionsList: React.FC = () => {
                       onClick={() => handleDownload(doc.pdfUrl)}
                       disabled={!doc.pdfUrl}
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="h-4 w-4 mr-1" />
+                      Générer PDF
                     </Button>
                   </div>
                 </TableCell>
