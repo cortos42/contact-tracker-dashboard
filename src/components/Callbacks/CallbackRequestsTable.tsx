@@ -37,23 +37,53 @@ const CallbackRequestsTable: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Check Supabase connection first
+  React.useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        console.log('Testing Supabase connection...');
+        const { data, error } = await supabase.from('callback_requests').select('count');
+        
+        if (error) {
+          console.error('Supabase connection test failed:', error);
+          toast({
+            title: 'Erreur de connexion',
+            description: `Impossible de se connecter à Supabase: ${error.message}`,
+            variant: 'destructive',
+          });
+        } else {
+          console.log('Supabase connection successful:', data);
+        }
+      } catch (e) {
+        console.error('Unexpected error testing Supabase connection:', e);
+      }
+    };
+    
+    checkConnection();
+  }, [toast]);
+
   // Fetch callback requests with improved error handling
   const { data: callbackRequests = [], isLoading, error } = useQuery({
     queryKey: ['callback-requests'],
     queryFn: async () => {
       console.log('Fetching callback requests...');
-      const { data, error } = await supabase
-        .from('callback_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('callback_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching callback requests:', error);
-        throw new Error(error.message);
+        if (error) {
+          console.error('Error fetching callback requests:', error);
+          throw new Error(error.message);
+        }
+        
+        console.log('Fetched callback requests:', data);
+        return data as CallbackRequest[];
+      } catch (e) {
+        console.error('Unexpected error in fetch callback requests query:', e);
+        throw e;
       }
-      
-      console.log('Fetched callback requests:', data);
-      return data as CallbackRequest[];
     },
   });
 
@@ -61,14 +91,19 @@ const CallbackRequestsTable: React.FC = () => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       console.log(`Updating status for request ${id} to ${status}`);
-      const { error } = await supabase
-        .from('callback_requests')
-        .update({ status })
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('callback_requests')
+          .update({ status })
+          .eq('id', id);
 
-      if (error) {
-        console.error('Error updating status:', error);
-        throw new Error(error.message);
+        if (error) {
+          console.error('Error updating status:', error);
+          throw new Error(error.message);
+        }
+      } catch (e) {
+        console.error('Unexpected error in update status mutation:', e);
+        throw e;
       }
     },
     onSuccess: () => {
@@ -82,7 +117,7 @@ const CallbackRequestsTable: React.FC = () => {
       console.error('Mutation error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le statut',
+        description: `Impossible de mettre à jour le statut: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
         variant: 'destructive',
       });
     },
