@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Contacts from "./pages/Contacts";
 import Propositions from "./pages/Propositions";
+import Documents from "./pages/Documents";
 import { ContactProvider } from "./context/ContactContext";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/propositions" element={<Propositions />} />
+            <Route path="/documents" element={<Documents />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
