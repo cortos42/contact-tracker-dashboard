@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PropositionForm from "@/components/Propositions/PropositionForm";
 import PropositionsList from "@/components/Propositions/PropositionsList";
 import { useContacts } from "@/context/ContactContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Propositions: React.FC = () => {
   const { contacts } = useContacts();
+  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("create");
   
   return (
@@ -35,10 +37,22 @@ const Propositions: React.FC = () => {
                 <CardTitle>Nouvelle proposition de travaux</CardTitle>
               </CardHeader>
               <CardContent>
-                <PropositionForm 
-                  onComplete={() => setSelectedTab("list")}
-                  contacts={contacts}
-                />
+                {contacts && contacts.length > 0 ? (
+                  <PropositionForm 
+                    onComplete={() => {
+                      setSelectedTab("list");
+                      toast({
+                        title: "Proposition créée",
+                        description: "Votre proposition a été créée avec succès.",
+                      });
+                    }}
+                    contacts={contacts}
+                  />
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">Aucun contact disponible. Veuillez d'abord ajouter des contacts.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
