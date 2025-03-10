@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Settings, Clipboard, LogOut } from 'lucide-react';
+import { Home, Users, FileText, Settings, Clipboard, LogOut, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Logo from './Logo';
 
@@ -14,6 +14,7 @@ const navItems = [
   { name: 'Contacts', href: '/contacts', icon: Users },
   { name: 'Propositions', href: '/propositions', icon: FileText },
   { name: 'Documents', href: '/documents', icon: Clipboard },
+  { name: 'Demande de rappel', href: '/callbacks', icon: PhoneCall },
   { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
