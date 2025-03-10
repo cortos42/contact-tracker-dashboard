@@ -10,7 +10,6 @@ import NotFound from "./pages/NotFound";
 import Contacts from "./pages/Contacts";
 import Propositions from "./pages/Propositions";
 import Documents from "./pages/Documents";
-import CallbackRequests from "./pages/CallbackRequests";
 import { ContactProvider } from "./context/ContactContext";
 import { createDocumentsBucket } from "./utils/createBucket";
 
@@ -34,7 +33,6 @@ const App = () => {
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/propositions" element={<Propositions />} />
               <Route path="/documents" element={<Documents />} />
-              <Route path="/callbacks" element={<CallbackRequests />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
