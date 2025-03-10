@@ -33,6 +33,41 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_documents: {
+        Row: {
+          contact_id: string
+          document_name: string
+          document_type: string
+          file_path: string
+          id: string
+          upload_date: string
+        }
+        Insert: {
+          contact_id: string
+          document_name: string
+          document_type: string
+          file_path: string
+          id?: string
+          upload_date?: string
+        }
+        Update: {
+          contact_id?: string
+          document_name?: string
+          document_type?: string
+          file_path?: string
+          id?: string
+          upload_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_documents_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "eligibility_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string | null
