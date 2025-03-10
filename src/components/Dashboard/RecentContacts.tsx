@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -19,93 +19,93 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Check, X, Clock, Info } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 type EligibilitySubmission = Tables<'eligibility_submissions'>;
-
-type ContactStatus = "nouveau" | "contacté" | "rendez-vous" | "travaux" | "payé";
-type MeetingResult = "concluant" | "non-concluant" | "en_attente";
-type WorkStatus = "terminé" | "en_cours" | "planifié" | "non_commencé";
-type PaymentStatus = "payé" | "partiellement_payé" | "non_payé" | "en_attente";
+type Project = Tables<'projects'>;
 
 interface ContactWithStatus extends EligibilitySubmission {
-  contactStatus?: ContactStatus;
-  meetingResult?: MeetingResult;
-  workStatus?: WorkStatus;
-  paymentStatus?: PaymentStatus;
+  project?: Project;
 }
 
 const RecentContacts: React.FC = () => {
-  const [contacts, setContacts] = useState<ContactWithStatus[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState<ContactWithStatus | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchContacts() {
+  const { data: contacts, isLoading } = useQuery({
+    queryKey: ['recentContacts'],
+    queryFn: async () => {
       try {
-        setLoading(true);
-        const { data, error } = await supabase
+        // Fetch recent eligibility submissions
+        const { data: submissions, error: submissionError } = await supabase
           .from('eligibility_submissions')
           .select('*')
           .order('submitted_at', { ascending: false })
           .limit(5);
         
-        if (error) {
-          console.error("Erreur lors de la récupération des contacts:", error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de récupérer les contacts de la base de données.",
-            variant: "destructive",
+        if (submissionError) throw submissionError;
+        
+        // Get associated projects
+        const contactsWithProjects: ContactWithStatus[] = [];
+        
+        for (const submission of submissions || []) {
+          const { data: project, error: projectError } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('eligibility_submission_id', submission.id)
+            .maybeSingle();
+            
+          if (projectError) {
+            console.error("Error fetching project:", projectError);
+          }
+          
+          contactsWithProjects.push({
+            ...submission,
+            project: project || undefined
           });
-        } else if (data) {
-          // Simulate status data (in a real app, this would come from the database)
-          const contactsWithStatus: ContactWithStatus[] = data.map(contact => ({
-            ...contact,
-            contactStatus: Math.random() > 0.5 ? "contacté" : "nouveau",
-            meetingResult: ["concluant", "non-concluant", "en_attente"][Math.floor(Math.random() * 3)] as MeetingResult,
-            workStatus: ["terminé", "en_cours", "planifié", "non_commencé"][Math.floor(Math.random() * 4)] as WorkStatus,
-            paymentStatus: ["payé", "partiellement_payé", "non_payé", "en_attente"][Math.floor(Math.random() * 4)] as PaymentStatus,
-          }));
-          setContacts(contactsWithStatus);
         }
+        
+        return contactsWithProjects;
       } catch (error) {
-        console.error("Erreur:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching contacts:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les contacts.",
+          variant: "destructive",
+        });
+        return [];
       }
     }
-
-    fetchContacts();
-  }, [toast]);
+  });
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
     return format(new Date(dateString), 'PPP', { locale: fr });
   };
 
-  const getStatusIcon = (status: ContactStatus | undefined) => {
-    if (status === "contacté") return <Check className="h-4 w-4 text-green-500" />;
+  const getStatusIcon = (status?: string) => {
+    if (status === "success") return <Check className="h-4 w-4 text-green-500" />;
+    if (status === "failure") return <X className="h-4 w-4 text-red-500" />;
     return <X className="h-4 w-4 text-red-500" />;
   };
 
-  const getMeetingResultIcon = (result: MeetingResult | undefined) => {
+  const getMeetingResultIcon = (result?: string) => {
     if (!result) return null;
-    if (result === "concluant") return <Check className="h-4 w-4 text-green-500" />;
-    if (result === "non-concluant") return <X className="h-4 w-4 text-red-500" />;
+    if (result === "success") return <Check className="h-4 w-4 text-green-500" />;
+    if (result === "failure") return <X className="h-4 w-4 text-red-500" />;
     return <Clock className="h-4 w-4 text-amber-500" />;
   };
 
-  const getWorkStatusBadge = (status: WorkStatus | undefined) => {
+  const getWorkStatusBadge = (status?: string) => {
     if (!status) return null;
     
     const statusMap = {
-      "terminé": { label: "Terminé", variant: "outline" as const, className: "bg-green-100 text-green-800" },
-      "en_cours": { label: "En cours", variant: "outline" as const, className: "bg-blue-100 text-blue-800" },
-      "planifié": { label: "Planifié", variant: "outline" as const, className: "bg-amber-100 text-amber-800" },
-      "non_commencé": { label: "Non commencé", variant: "outline" as const, className: "bg-gray-100 text-gray-800" },
+      "completed": { label: "Terminé", variant: "outline" as const, className: "bg-green-100 text-green-800" },
+      "in_progress": { label: "En cours", variant: "outline" as const, className: "bg-blue-100 text-blue-800" },
+      "not_started": { label: "Non commencé", variant: "outline" as const, className: "bg-gray-100 text-gray-800" },
     };
     
-    const config = statusMap[status];
+    const config = statusMap[status as keyof typeof statusMap] || statusMap["not_started"];
     return (
       <Badge variant={config.variant} className={config.className}>
         {config.label}
@@ -113,17 +113,16 @@ const RecentContacts: React.FC = () => {
     );
   };
 
-  const getPaymentStatusBadge = (status: PaymentStatus | undefined) => {
+  const getPaymentStatusBadge = (status?: string) => {
     if (!status) return null;
     
     const statusMap = {
-      "payé": { label: "Payé", variant: "outline" as const, className: "bg-green-100 text-green-800" },
-      "partiellement_payé": { label: "Partiellement payé", variant: "outline" as const, className: "bg-amber-100 text-amber-800" },
-      "non_payé": { label: "Non payé", variant: "outline" as const, className: "bg-red-100 text-red-800" },
-      "en_attente": { label: "En attente", variant: "outline" as const, className: "bg-gray-100 text-gray-800" },
+      "paid": { label: "Payé", variant: "outline" as const, className: "bg-green-100 text-green-800" },
+      "pending": { label: "En attente", variant: "outline" as const, className: "bg-amber-100 text-amber-800" },
+      "rejected": { label: "Refusé", variant: "outline" as const, className: "bg-red-100 text-red-800" },
     };
     
-    const config = statusMap[status];
+    const config = statusMap[status as keyof typeof statusMap] || statusMap["pending"];
     return (
       <Badge variant={config.variant} className={config.className}>
         {config.label}
@@ -131,7 +130,7 @@ const RecentContacts: React.FC = () => {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -163,7 +162,7 @@ const RecentContacts: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contacts.map((contact) => (
+            {contacts && contacts.length > 0 ? contacts.map((contact) => (
               <TableRow key={contact.id}>
                 <TableCell className="font-medium">{contact.name}</TableCell>
                 <TableCell>{contact.phone}</TableCell>
@@ -250,22 +249,21 @@ const RecentContacts: React.FC = () => {
                 <TableCell>
                   <div className="flex items-center justify-center space-x-2">
                     <div title="Contacté">
-                      {getStatusIcon(contact.contactStatus)}
+                      {getStatusIcon(contact.project?.contact_status)}
                     </div>
                     <div title="Rendez-vous">
-                      {getMeetingResultIcon(contact.meetingResult)}
+                      {getMeetingResultIcon(contact.project?.appointment_status)}
                     </div>
                     <div title="Travaux">
-                      {getWorkStatusBadge(contact.workStatus)}
+                      {getWorkStatusBadge(contact.project?.work_status)}
                     </div>
                     <div title="Paiement">
-                      {getPaymentStatusBadge(contact.paymentStatus)}
+                      {getPaymentStatusBadge(contact.project?.payment_status)}
                     </div>
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
-            {contacts.length === 0 && (
+            )) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-4">
                   Aucun contact récent à afficher
@@ -281,6 +279,29 @@ const RecentContacts: React.FC = () => {
           >
             Voir tous les contacts →
           </Link>
+        </div>
+        <div className="mt-4 text-xs text-muted-foreground border-t pt-2">
+          <p className="font-medium mb-1">Légende des statuts :</p>
+          <ul className="space-y-1">
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" /> Contacté / ✓ Rendez-vous réussi
+            </li>
+            <li className="flex items-center gap-2">
+              <X className="h-3 w-3 text-red-500" /> Non contacté / ✗ Rendez-vous non concluant
+            </li>
+            <li className="flex items-center gap-2">
+              <Clock className="h-3 w-3 text-amber-500" /> Rendez-vous en attente
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="h-4 bg-green-100 text-green-800 text-xs">Terminé</Badge> Travaux terminés
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="h-4 bg-blue-100 text-blue-800 text-xs">En cours</Badge> Travaux en cours
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="h-4 bg-gray-100 text-gray-800 text-xs">Non commencé</Badge> Travaux non commencés
+            </li>
+          </ul>
         </div>
       </CardContent>
     </Card>
