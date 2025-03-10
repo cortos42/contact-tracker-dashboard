@@ -16,11 +16,8 @@ const CallbackRequests: React.FC = () => {
   const addTestCallbackRequest = async () => {
     console.log('Adding test callback request...');
     try {
-      // Log Supabase client details (without sensitive info)
-      console.log('Supabase client information:', {
-        url: supabase.supabaseUrl,
-        hasKey: !!supabase.supabaseKey,
-      });
+      // Log Supabase client information without accessing protected properties
+      console.log('Attempting to connect to Supabase...');
       
       const { data, error } = await supabase
         .from('callback_requests')
@@ -58,23 +55,26 @@ const CallbackRequests: React.FC = () => {
     }
   };
 
-  // Log RLS information on mount
+  // Test Supabase connection on mount
   React.useEffect(() => {
-    const checkRLS = async () => {
+    const testConnection = async () => {
       try {
-        console.log('Checking RLS policies for callback_requests table...');
-        const { data, error } = await supabase.rpc('get_policies', { table_name: 'callback_requests' });
+        console.log('Testing Supabase connection...');
+        const { data, error } = await supabase
+          .from('callback_requests')
+          .select('count');
+        
         if (error) {
-          console.error('Could not check RLS policies:', error);
+          console.error('Supabase connection test failed:', error);
         } else {
-          console.log('RLS policy information:', data);
+          console.log('Supabase connection successful:', data);
         }
       } catch (e) {
-        console.error('Error checking RLS policies:', e);
+        console.error('Unexpected error testing Supabase connection:', e);
       }
     };
 
-    checkRLS().catch(console.error);
+    testConnection();
   }, []);
 
   return (
