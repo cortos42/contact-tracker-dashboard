@@ -3,16 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
 import { Input } from '@/components/ui/input';
-import { Search, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Info, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { EligibilitySubmission } from '@/types/contact';
 import ContactsTable from '@/components/Contacts/ContactsTable';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Contacts: React.FC = () => {
   const [submissions, setSubmissions] = useState<EligibilitySubmission[]>([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState<EligibilitySubmission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch data initially
   useEffect(() => {
@@ -29,10 +32,33 @@ const Contacts: React.FC = () => {
           table: 'eligibility_submissions'
         },
         () => {
+          console.log('Received real-time update for eligibility_submissions');
           fetchSubmissions(); // Refetch on any change
         }
       )
       .subscribe();
+
+    // Test connection to Supabase
+    const testConnection = async () => {
+      try {
+        console.log('Testing Supabase connection...');
+        const { data, error } = await supabase
+          .from('eligibility_submissions')
+          .select('count');
+        
+        if (error) {
+          console.error('Supabase connection test failed:', error);
+          setError(`Connection to database failed: ${error.message}`);
+        } else {
+          console.log('Supabase connection successful:', data);
+        }
+      } catch (e) {
+        console.error('Unexpected error testing Supabase connection:', e);
+        setError(`Unexpected error connecting to database: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      }
+    };
+    
+    testConnection();
 
     return () => {
       supabase.removeChannel(channel);
@@ -61,19 +87,31 @@ const Contacts: React.FC = () => {
   const fetchSubmissions = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      
+      console.log('Fetching eligibility submissions...');
       const { data, error } = await supabase
         .from('eligibility_submissions')
         .select('*')
         .order('submitted_at', { ascending: false });
 
       if (error) {
-        throw error;
+        console.error('Error fetching eligibility submissions:', error);
+        setError(`Failed to load contacts: ${error.message}`);
+        toast.error('Erreur lors du chargement des soumissions');
+        return;
       }
 
+      console.log('Fetched submissions data:', data);
       setSubmissions(data || []);
       setFilteredSubmissions(data || []);
+      
+      if (data && data.length === 0) {
+        console.log('No submissions found in the database');
+      }
     } catch (error) {
-      console.error('Error fetching eligibility submissions:', error);
+      console.error('Unexpected error fetching eligibility submissions:', error);
+      setError(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast.error('Erreur lors du chargement des soumissions');
     } finally {
       setIsLoading(false);
@@ -85,17 +123,36 @@ const Contacts: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold">Contacts</h1>
 
-        <div className="relative flex-1 md:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Rechercher par nom, email, téléphone ou code postal..."
-            className="pl-9 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={fetchSubmissions}
+            disabled={isLoading}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualiser
+          </Button>
+          
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Rechercher par nom, email, téléphone ou code postal..."
+              className="pl-9 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
+      
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Erreur</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       <ContactsTable 
         submissions={filteredSubmissions} 
